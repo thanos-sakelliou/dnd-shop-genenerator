@@ -28,9 +28,11 @@ def better_price(row):
         else:
             ratio = sane_price / better_price
     except: True
+    return int(better_price)
 
-    random_variance = np.random.randint(low=-dmpg_price/20-1, high=dmpg_price/20)*10
-    return str(better_price) + " (" + '{0:+d}'.format(random_variance) + ")"
+def price_fluctuation(row):
+    random_variance = np.random.randint(low=-row['Suggested Price']/20-1, high=row['Suggested Price']/20)*10
+    return  '{0:+d}'.format(random_variance) 
 
 def multiple_occurances(items, number):
     items = items.sample(n=number, replace=True)
@@ -80,6 +82,7 @@ def split_and_sample_items(relevant_items, equipment_items_number, mage_items_nu
 
     mage_items = relevant_items[relevant_items['Type'].isin(MAGE)]
     mage_items = mage_items[mage_items['Rarity'].isin(selected_rarities)]
+    populate_with_spells(mage_items, [], "Wand Of ")
 
     #sample number of items
     sampled_consumable_items = consumable_items.sample(n=consumable_items_number, replace=True)
@@ -108,6 +111,8 @@ def load_items(df):
     # #add new prices
     relevant_items.insert(1, 'Suggested Price', 0)
     relevant_items['Suggested Price'] = relevant_items.apply(better_price, axis=1)
+    relevant_items.insert(2, 'Fluctuation', 0)
+    relevant_items['Fluctuation'] = relevant_items.apply(price_fluctuation, axis=1)
     return relevant_items
 
 def export_to_excel(sampled_consumable_items, sampled_equipment_items, sampled_mage_items):
